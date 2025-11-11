@@ -1,52 +1,83 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const Register = ({ onRegister }) => {
-  const [user, setUser] = useState({ name: "", email: "", password: "" });
+function Register() {
   const navigate = useNavigate();
 
-  const handleChange = (e) => setUser({ ...user, [e.target.name]: e.target.value });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Get previously registered users (array)
-    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+    const { name, email, password, confirmPassword } = formData;
 
-    // Check if email already exists
-    const userExists = existingUsers.some(
-      (u) => u.email.toLowerCase() === user.email.toLowerCase()
-    );
-
-    if (userExists) {
-      alert("An account with this email already exists. Please use another email or login.");
+    // Check if all fields are filled
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill in all fields");
       return;
     }
 
-    // Add new user
-    existingUsers.push(user);
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+    // Password length validation
+    if (password.length < 8) {
+      alert("Password must be at least 8 characters long");
+      return;
+    }
 
-    // Set this user as logged in
-    localStorage.setItem("user", JSON.stringify(user));
-    onRegister(user);
-    navigate("/profile");
+    // Confirm password validation
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    // Check if email already exists
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const existingUser = users.find((user) => user.email === email);
+    if (existingUser) {
+      alert("An account with this email already exists!");
+      return;
+    }
+
+    // Save new user to localStorage
+    const newUser = { name, email, password };
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Account created successfully!");
+    navigate("/login");
   };
 
   return (
-    <div className="page-container">
-      <div className="card form-card shadow-lg p-4">
-        <h3 className="text-center mb-4 fw-bold">Register</h3>
+    <div
+      className="d-flex justify-content-center align-items-center"
+    >
+      <div className="card shadow p-4" style={{ borderRadius: "15px" }}>
+        <h2 className="text-center mb-4">Create Account</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <input
               type="text"
               name="name"
               className="form-control"
-              placeholder="Enter your name"
-              value={user.name}
+              value={formData.name}
               onChange={handleChange}
-              required
+              placeholder="Enter your name"
             />
           </div>
 
@@ -55,36 +86,73 @@ const Register = ({ onRegister }) => {
               type="email"
               name="email"
               className="form-control"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
-              value={user.email}
-              onChange={handleChange}
-              required
             />
           </div>
 
-          <div className="mb-3">
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="Enter your password"
-              value={user.password}
-              onChange={handleChange}
-              required
-            />
+          <div className="mb-3 position-relative">
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="form-control"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
+              <span
+                className="input-group-text"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+            <small className="text-muted">
+              Password must be at least 8 characters long.
+            </small>
           </div>
 
-          <button type="submit" className="btn btn-success w-100 mt-2">
+          <div className="mb-3 position-relative">
+            <div className="input-group">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                className="form-control"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+              />
+              <span
+                className="input-group-text"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100 mt-3">
             Register
           </button>
-        </form>
 
-        <p className="text-center mt-3">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+          <p className="text-center mt-3 mb-0">
+            Already have an account?{" "}
+            <span
+              className="text-primary"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </span>
+          </p>
+        </form>
       </div>
     </div>
   );
-};
+}
 
 export default Register;

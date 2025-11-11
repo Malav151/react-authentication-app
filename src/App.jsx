@@ -23,7 +23,7 @@ function App() {
         <Route path="/" element={user ? <Navigate to="/profile" /> : <Navigate to="/login" />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register onRegister={handleLogin} />} />
-        <Route path="/profile" element={user ? <Profile user={user} onLogout={handleLogout} setUser={setUser} /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={<Profile user={user} onLogout={handleLogout} setUser={setUser} />} />
       </Routes>
     </Router>
   );

@@ -1,70 +1,108 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const Login = ({ onLogin }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+function Login() {
   const navigate = useNavigate();
 
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Handle changes in form
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Get all registered users
-    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+    const { email, password } = formData;
 
-    // Find matching user
-    const matchedUser = existingUsers.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    // Check if all fields are filled
+    if (!email || !password) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    // Finding if this user exist
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const validUser = users.find(
+      (user) => user.email === email && user.password === password
     );
 
-    if (matchedUser) {
-      // Save current logged-in user
-      localStorage.setItem("user", JSON.stringify(matchedUser));
-      onLogin(matchedUser);
+    // Cheking if user is validate
+    if (validUser) {
+      localStorage.setItem("loggedInUser", JSON.stringify(validUser));
+      alert("Login successful!");
       navigate("/profile");
     } else {
-      alert("Invalid credentials. Please check your email and password.");
+      alert("Invalid credentials. Please try again!");
     }
   };
 
   return (
-    <div className="page-container">
-      <div className="card form-card shadow-lg p-4">
-        <h3 className="text-center mb-4 fw-bold">Login</h3>
+    <div className="d-flex justify-content-center align-items-center">
+      <div className="card shadow p-4" style={{borderRadius: "15px" }}>
+        <h2 className="text-center mb-4">Login</h2>
+
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <input
               type="email"
+              name="email"
               className="form-control"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
 
-          <div className="mb-3">
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="mb-3 position-relative">
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="form-control"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
+              <span
+                className="input-group-text"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
           </div>
 
-          <button type="submit" className="btn btn-primary w-100 mt-2">
+          <button type="submit" className="btn btn-primary w-100 mt-3">
             Login
           </button>
-        </form>
 
-        <p className="text-center mt-3">
-          Don’t have an account? <Link to="/register">Register</Link>
-        </p>
+          <p className="text-center mt-3 mb-0">
+            Don’t have an account?{" "}
+            <span
+              className="text-primary"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/register")}
+            >
+              Register
+            </span>
+          </p>
+        </form>
       </div>
     </div>
   );
-};
+}
 
 export default Login;
